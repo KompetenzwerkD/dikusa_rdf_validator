@@ -14,4 +14,13 @@ public class Neo4J_Manager {
 				
 	}
 	
+    
+
+    public Neo4J_Manager( String uri, String user, String password )
+    {
+        driver = GraphDatabase.driver( uri, AuthTokens.basic( user, password ) );
+    }
+    
+    private final Driver driver;
+	
 }
