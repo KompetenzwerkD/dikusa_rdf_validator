@@ -11,6 +11,7 @@ import org.neo4j.driver.Transaction;
 
 import static org.neo4j.driver.Values.parameters;
 
+import java.io.IOException;
 import java.util.List;
 
 public class Neo4J_Manager {
@@ -26,8 +27,15 @@ public class Neo4J_Manager {
     }
 	
     public Neo4J_Manager( String uri, String user, String password )
-    {
-        this.driver = GraphDatabase.driver( uri, AuthTokens.basic( user, password ) );
+    {	this.driver = null;
+        try {
+        	this.driver = GraphDatabase.driver( uri, AuthTokens.basic( user, password ) );
+        } catch (Exception e1) {
+        	System.out.println("Unable to connect to Neo4J. Please check your login credentials.");
+        	System.exit(1);
+        }
+        
+        
     }
     
 
@@ -43,6 +51,6 @@ public class Neo4J_Manager {
     			
     }
     
-    final Driver driver;
+    Driver driver;
 	
 }

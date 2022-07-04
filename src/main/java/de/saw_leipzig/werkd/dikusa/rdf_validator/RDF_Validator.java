@@ -99,6 +99,12 @@ public class RDF_Validator {
         }
         
         if (this.mapping_bool==true) {
+        	
+    		this.neo = new Neo4J_Manager();
+    		
+    		//you can comment out the line above and provide Neo4J login data here
+    		//this.neo = new Neo4J_Manager("neo4j://server:7687","user","pass");
+        	
         	this.map_and_export();
         }
                 
@@ -343,11 +349,6 @@ public class RDF_Validator {
 		
 		this.mapping_filename = new String();
 		this.mapping_bool = false;
-		
-		this.neo = new Neo4J_Manager();
-		
-		//you can comment out the line above and provide Neo4J login data here
-		//this.neo = new Neo4J_Manager("neo4j://server:7687","user","pass");
 		
 		// create Options object
 		this.options = new Options();
