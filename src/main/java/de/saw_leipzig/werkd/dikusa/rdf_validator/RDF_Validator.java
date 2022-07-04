@@ -40,6 +40,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.MissingOptionException;
 
+
 public class RDF_Validator {
 
     public static void main(String[] args) {
@@ -93,16 +94,27 @@ public class RDF_Validator {
 			System.exit(1);
 		}
         
-        if (this.knowledge_bool==true) {
-        	this.export_knowledge_base();
+        if (validation_failed==true) {
+        	System.exit(1);
         }
+        
+        if (this.mapping_bool==true) {
+        	this.map_and_export();
+        }
+                
     }
     
-    private void export_knowledge_base() {
-    	System.out.println("Data exported to knowledge base (still to be implemented)\n");
-    }
-    
-    
+    /*
+     * maps RDF-data in DIKUSA common data model to Neo4J and exports the results
+     */
+    private void map_and_export() {
+    	
+    	RDF_Neo4J_Mapper mapper = new RDF_Neo4J_Mapper(this.instance_model, this.neo,  this.mapping_filename);
+    	
+    	mapper.map_data();
+    	
+    	//this.neo.printAll();
+	}
     
     /*
      * writes (enriched) RDF data and validation report data to file
@@ -286,7 +298,7 @@ public class RDF_Validator {
         if (cmd.hasOption("e")) {
             this.export_bool = true;
             this.export_file = cmd.getOptionValue("e");
-            System.out.println("RDF data to be exported to local file: " + export_file + "\n");
+            System.out.println("RDF data to be exported to local file: " + this.export_file + "\n");
         }
 		
         if (cmd.hasOption("v")) {
@@ -294,17 +306,17 @@ public class RDF_Validator {
             System.out.println("RDF data will be validated\n");
         }
         
-        if (cmd.hasOption("k")) {
-            this.knowledge_bool = true;
-            System.out.println("RDF data will be exported into knowledge graph\n");
-        }
-        
         if (cmd.hasOption("r")) {
             this.report_bool = true;
             this.report_file = cmd.getOptionValue("r");
-            System.out.println("Shacl validation report will be exported to local file: " + report_file + "\n");
+            System.out.println("Shacl validation report will be exported to local file: " + this.report_file + "\n");
         }
-        
+
+        if (cmd.hasOption("m")) {
+            this.mapping_bool = true;
+            this.mapping_filename = cmd.getOptionValue("m");
+            System.out.println("Mapping file will be loaded from: " + this.mapping_filename + "\n");
+        }
 	}
 	
 	/*
@@ -321,14 +333,21 @@ public class RDF_Validator {
 		this.export_file = new String();
 		
 		this.validate_bool = false;
-		this.knowledge_bool = false;
-
+		
 		this.report_bool = false;
 		this.report_file = new String();
 		
 		this.validationReportModel = new TreeModel();
 		
 		this.validation_failed = false;
+		
+		this.mapping_filename = new String();
+		this.mapping_bool = false;
+		
+		this.neo = new Neo4J_Manager();
+		
+		//you can comment out the line above and provide Neo4J login data here
+		//this.neo = new Neo4J_Manager("neo4j://server:7687","user","pass");
 		
 		// create Options object
 		this.options = new Options();
@@ -357,16 +376,16 @@ public class RDF_Validator {
                 .desc("validate RDF file")
                 .required(false)
                 .build());
-        this.options.addOption(Option.builder("k")
-                .longOpt("knowledge_graph")
-                .hasArg(false)
-                .desc("export into knowledge graph")
-                .required(false)
-                .build());
         this.options.addOption(Option.builder("r")
                 .longOpt("report")
                 .hasArg(true)
                 .desc("specify local export location for shacl validation report (if validation fails)")
+                .required(false)
+                .build());
+        this.options.addOption(Option.builder("m")
+        		.longOpt("mapping")
+                .hasArg(true)
+                .desc("location (URL or local) of mapping file in csv format for knowledge base import")
                 .required(false)
                 .build());
 		
@@ -389,8 +408,6 @@ public class RDF_Validator {
 	private String export_file;
 	
 	private Boolean validate_bool;
-	
-	private Boolean knowledge_bool;
 
 	private Boolean report_bool;
 	
@@ -399,4 +416,10 @@ public class RDF_Validator {
 	private Model validationReportModel;
 	
 	private Boolean validation_failed;
+	
+	private String mapping_filename;
+	
+	private Neo4J_Manager neo;
+	
+	private Boolean mapping_bool;
 }
